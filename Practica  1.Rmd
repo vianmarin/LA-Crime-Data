@@ -13,40 +13,38 @@ knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(knitr, dplyr)
 df = read_csv("Crime_Data.csv")
 
-#The column "Crime Code 4" is filled with NA's, so we can discard it. In addition to that, we can get rid of the first column "DR Number"  which only indicates the crime id.
+#The column "Crime Code 4" is totally filled with NA's, so we can discard it. In addition to that, 
+# we can get rid of the first column "DR Number"  which only indicates the crime id.
 df$`Crime Code 4`= NULL
-df$`DR Number`=NULL
+df$`DR Number`= NULL # ID del número de crimen
 
+#Some more variables that are redundant
+df$`Area ID`= NULL
+df$`Weapon Used Code`= NULL
+df$`Premise Code`= NULL
+df$`Status Code`= NULL
+
+#TOO DETAILED:do we need it?
+df$`Reporting District` = NULL #It's 991 areas, we'll try to go on without it,
+df$Location = NULL #GPS coordinates
+#df$`Address`
+
+#Regarding the time of the crime let's summarize it in 4 categories: morning, afternoon, evening and night.
+df$`Time Occurred`=cut(as.integer(df$`Time Occurred`), c(0000,0601,1201,1801,max(df$`Time Occurred`)), labels=c("Night","Morning","Afternoon","Evening"))
+
+#Regarding te age of the victim, let's summarize it in 4 categories: 
+#         minor(<18), young adult(18-<30), adult(31-60), elder (>60)
+df$`Victim Age`=cut(as.integer(df$`Victim Age`),c(0,17,30,59,max(df$`Victim Age`)))
+    
+# I create a new variable to calculate how many days took to report a crime 
+df$Report = as.Date(df$`Date Reported`,"%m/%d/%Y")-as.Date(df$`Date Occurred`,"%m/%d/%Y")
+# Maybe at the beginning and end of month crime ocurrences peak?
+
+table(df$Report)
+
+str(df)
 
 ```
 
 
 
-Estas te recomiendan en cuantos valores discretizados deberías dividir las variables (K):
-
-nclass.Sturges
-nclass.FD
-nclass.Scott
-
-Con la funcion cut(x,breaks=L)
-normalmente se coge el min(x) se le resta (precision/2) y si queremos el max es lo mismo + amplitud(O:K) que es( (max(x)-min(X))/k y redondeando el absoluto a la alta a la precision de los datos (numero de decimales que tengamos  3.21 sería 3.3 si fueran decimales)
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
